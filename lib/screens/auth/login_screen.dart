@@ -182,7 +182,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         label: 'Facebook',
                         color: const Color(0xFF1877F2),
                         onTap: () {
-                          // Social login logic
+                          context.read<AuthBloc>().add(
+                                const FacebookLoginRequested(),
+                              );
                         },
                       ),
                     ],

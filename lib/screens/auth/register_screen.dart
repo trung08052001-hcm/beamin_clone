@@ -146,7 +146,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         label: 'Facebook',
                         color: const Color(0xFF1877F2),
                         onTap: () {
-                          // Facebook login logic
+                          context.read<AuthBloc>().add(
+                                const FacebookLoginRequested(),
+                              );
                         },
                       ),
                     ],

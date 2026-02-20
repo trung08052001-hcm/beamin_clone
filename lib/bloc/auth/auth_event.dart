@@ -41,3 +41,10 @@ class GoogleLoginRequested extends AuthEvent {
   @override
   List<Object> get props => [];
 }
+
+class FacebookLoginRequested extends AuthEvent {
+  const FacebookLoginRequested();
+
+  @override
+  List<Object> get props => [];
+}
