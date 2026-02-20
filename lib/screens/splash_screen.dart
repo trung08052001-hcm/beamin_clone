@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../constants/colors.dart';
-import '../blocs/splash/splash_bloc.dart';
+import '../bloc/splash/splash_bloc.dart';
 import '../injection.dart';
 import '../router/app_router.gr.dart';
 

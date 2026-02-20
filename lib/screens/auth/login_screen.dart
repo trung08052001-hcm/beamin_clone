@@ -2,9 +2,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../blocs/auth/auth_bloc.dart';
+import '../../bloc/auth/auth_bloc.dart';
 import '../../constants/colors.dart';
-import '../../injection.dart';
 import '../../router/app_router.gr.dart';
 import '../../widgets/auth/auth_button.dart';
 import '../../widgets/auth/auth_header.dart';
@@ -25,10 +24,15 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isPasswordVisible = false;
 
   @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<AuthBloc>(),
-      child: BlocListener<AuthBloc, AuthState>(
+    return BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
             ScaffoldMessenger.of(
@@ -167,7 +171,9 @@ class _LoginScreenState extends State<LoginScreen> {
                         icon: Icons.g_mobiledata,
                         label: 'Google',
                         onTap: () {
-                          // Social login logic
+                          context.read<AuthBloc>().add(
+                                const GoogleLoginRequested(),
+                              );
                         },
                       ),
                       const SizedBox(width: 16),
@@ -210,7 +216,6 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }

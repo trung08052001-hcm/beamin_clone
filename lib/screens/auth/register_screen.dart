@@ -2,11 +2,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../blocs/auth/auth_bloc.dart';
-import '../../injection.dart';
+import '../../bloc/auth/auth_bloc.dart';
+import '../../constants/colors.dart';
+import '../../router/app_router.gr.dart';
 import '../../widgets/auth/auth_button.dart';
 import '../../widgets/auth/auth_header.dart';
 import '../../widgets/auth/auth_text_field.dart';
+import '../../widgets/auth/social_login_button.dart';
 
 @RoutePage()
 class RegisterScreen extends StatefulWidget {
@@ -20,16 +22,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _phoneController = TextEditingController();
 
   @override
+  void dispose() {
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<AuthBloc>(),
-      child: BlocListener<AuthBloc, AuthState>(
+    return BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthSuccess) {
             ScaffoldMessenger.of(
               context,
             ).showSnackBar(SnackBar(content: Text(state.message)));
-            context.router.back();
+            context.router.replaceAll([const MainRoute()]);
           } else if (state is AuthFailure) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text(state.error), backgroundColor: Colors.red),
@@ -105,12 +111,51 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       height: 1.5,
                     ),
                   ),
+                  const SizedBox(height: 32),
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: Colors.grey.shade200)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'Hoặc tiếp tục với',
+                          style: GoogleFonts.notoSans(
+                            color: Colors.grey.shade500,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      Expanded(child: Divider(color: Colors.grey.shade200)),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
+                  Row(
+                    children: [
+                      SocialLoginButton(
+                        icon: Icons.g_mobiledata,
+                        label: 'Google',
+                        onTap: () {
+                          context.read<AuthBloc>().add(
+                                const GoogleLoginRequested(),
+                              );
+                        },
+                      ),
+                      const SizedBox(width: 16),
+                      SocialLoginButton(
+                        icon: Icons.facebook,
+                        label: 'Facebook',
+                        color: const Color(0xFF1877F2),
+                        onTap: () {
+                          // Facebook login logic
+                        },
+                      ),
+                    ],
+                  ),
                 ],
               ),
             ),
           ),
         ),
-      ),
-    );
+      );
   }
 }

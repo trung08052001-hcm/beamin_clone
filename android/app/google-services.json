@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "836934023854",
+    "project_id": "beaminclone",
+    "storage_bucket": "beaminclone.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:836934023854:android:d9fd422e01507f05238b3f",
+        "android_client_info": {
+          "package_name": "com.example.beamin_clone"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "836934023854-shqlgsbcf99qskl0uvlkjdrce69oo4q6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.beamin_clone",
+            "certificate_hash": "72b319de71fc26de5ec893453fc9156fd21ae92e"
+          }
+        },
+        {
+          "client_id": "836934023854-hl2sq0380gk1tcjrb9fnv75ipfmvduql.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCr5vNUfCz8NrF_Gzm9UougWUBFlnYl91s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "836934023854-hl2sq0380gk1tcjrb9fnv75ipfmvduql.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "836934023854-fuf04cdfinm0c44sarcmfs7d6qi72h5r.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.beaminClone"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
