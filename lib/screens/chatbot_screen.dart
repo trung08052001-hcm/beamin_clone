@@ -6,6 +6,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 import 'package:image_picker/image_picker.dart';
 import '../constants/colors.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/chatbot/chatbot_bloc.dart';
+import '../bloc/chatbot/chatbot_event.dart';
+import '../bloc/chatbot/chatbot_state.dart';
 
 @RoutePage()
 class ChatbotScreen extends StatefulWidget {
@@ -42,74 +46,104 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF5F6F8),
-      appBar: AppBar(
-        title: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(
-                color: Color(0xFFE0F7FA),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.smart_toy,
-                color: AppColors.primary,
-                size: 24,
-              ),
-            ),
-            const SizedBox(width: 12),
-            const Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Baemin AI',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+    return BlocProvider(
+      create: (_) => ChatbotBloc(),
+      child: BlocListener<ChatbotBloc, ChatbotState>(
+        listener: (context, state) {
+          if (state is ChatbotAddressLoaded) {
+            setState(() {
+              messages.insert(
+                0,
+                ChatMessage(
+                  user: geminiUser,
+                  createdAt: DateTime.now(),
+                  text: state.address,
                 ),
-                Text(
-                  'Đang trực tuyến',
-                  style: TextStyle(color: Colors.green, fontSize: 12),
+              );
+            });
+          } else if (state is ChatbotError) {
+            setState(() {
+              messages.insert(
+                0,
+                ChatMessage(
+                  user: geminiUser,
+                  createdAt: DateTime.now(),
+                  text: 'Lỗi: ' + state.message,
+                ),
+              );
+            });
+          }
+        },
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF5F6F8),
+          appBar: AppBar(
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE0F7FA),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.smart_toy,
+                    color: AppColors.primary,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Baemin AI',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    Text(
+                      'Đang trực tuyến',
+                      style: TextStyle(color: Colors.green, fontSize: 12),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-        backgroundColor: Colors.white,
-        elevation: 1,
-        centerTitle: false,
-      ),
-      body: DashChat(
-        currentUser: currentUser,
-        onSend: _sendMessage,
-        messages: messages,
-        inputOptions: InputOptions(
-          leading: [
-            IconButton(
-              onPressed: _sendMediaMessage,
-              icon: const Icon(Icons.image, color: AppColors.primary),
+            backgroundColor: Colors.white,
+            elevation: 1,
+            centerTitle: false,
+          ),
+          body: DashChat(
+            currentUser: currentUser,
+            onSend: _sendMessage,
+            messages: messages,
+            inputOptions: InputOptions(
+              leading: [
+                IconButton(
+                  onPressed: _sendMediaMessage,
+                  icon: const Icon(Icons.image, color: AppColors.primary),
+                ),
+              ],
+              inputDecoration: InputDecoration(
+                hintText: 'Nhập tin nhắn...',
+                hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
+                filled: true,
+                fillColor: const Color(0xFFF5F6F8),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(24),
+                  borderSide: BorderSide.none,
+                ),
+              ),
             ),
-          ],
-          inputDecoration: InputDecoration(
-            hintText: 'Nhập tin nhắn...',
-            hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
-            filled: true,
-            fillColor: const Color(0xFFF5F6F8),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(24),
-              borderSide: BorderSide.none,
+            messageOptions: const MessageOptions(
+              containerColor: AppColors.primary,
+              textColor: Colors.white,
+              currentUserContainerColor: Colors.white,
+              currentUserTextColor: Colors.black87,
             ),
           ),
-        ),
-        messageOptions: const MessageOptions(
-          containerColor: AppColors.primary,
-          textColor: Colors.white,
-          currentUserContainerColor: Colors.white,
-          currentUserTextColor: Colors.black87,
         ),
       ),
     );
@@ -120,6 +154,13 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       messages.insert(0, chatMessage);
     });
 
+    // Address logic: if user asks for address, use Bloc
+    if (chatMessage.text.toLowerCase().contains('địa chỉ')) {
+      BlocProvider.of<ChatbotBloc>(context).add(AddressRequested(chatMessage.text));
+      return;
+    }
+
+    // ...existing code...
     try {
       String question = chatMessage.text;
       List<Uint8List>? images;
