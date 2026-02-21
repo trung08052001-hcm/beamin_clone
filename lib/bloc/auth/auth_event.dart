@@ -18,21 +18,23 @@ class LoginRequested extends AuthEvent {
 }
 
 class SignupRequested extends AuthEvent {
-  final String phone;
+  final String email;
+  final String password;
+  final String name;
 
-  const SignupRequested(this.phone);
+  const SignupRequested(this.email, this.password, this.name);
 
   @override
-  List<Object> get props => [phone];
+  List<Object> get props => [email, password, name];
 }
 
 class ResetPasswordRequested extends AuthEvent {
-  final String emailOrPhone;
+  final String email;
 
-  const ResetPasswordRequested(this.emailOrPhone);
+  const ResetPasswordRequested(this.email);
 
   @override
-  List<Object> get props => [emailOrPhone];
+  List<Object> get props => [email];
 }
 
 class GoogleLoginRequested extends AuthEvent {

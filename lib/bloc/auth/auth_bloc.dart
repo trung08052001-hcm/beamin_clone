@@ -21,18 +21,52 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<FacebookLoginRequested>(_onFacebookLoginRequested);
   }
 
+  String _mapFirebaseAuthError(String code) {
+    switch (code) {
+      case 'user-not-found':
+        return 'Không tìm thấy tài khoản với email này';
+      case 'wrong-password':
+        return 'Mật khẩu không chính xác';
+      case 'invalid-email':
+        return 'Email không hợp lệ';
+      case 'user-disabled':
+        return 'Tài khoản đã bị vô hiệu hóa';
+      case 'email-already-in-use':
+        return 'Email này đã được sử dụng';
+      case 'operation-not-allowed':
+        return 'Phương thức đăng nhập chưa được kích hoạt';
+      case 'weak-password':
+        return 'Mật khẩu quá yếu, vui lòng dùng ít nhất 6 ký tự';
+      case 'too-many-requests':
+        return 'Quá nhiều yêu cầu, vui lòng thử lại sau';
+      case 'invalid-credential':
+        return 'Email hoặc mật khẩu không chính xác';
+      default:
+        return 'Đã xảy ra lỗi, vui lòng thử lại';
+    }
+  }
+
   Future<void> _onLoginRequested(
     LoginRequested event,
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
 
-    if (event.email.isNotEmpty && event.password.isNotEmpty) {
-      emit(const AuthSuccess('Đăng nhập thành công!'));
-    } else {
+    if (event.email.isEmpty || event.password.isEmpty) {
       emit(const AuthFailure('Vui lòng điền đầy đủ thông tin'));
+      return;
+    }
+
+    try {
+      await _firebaseAuth.signInWithEmailAndPassword(
+        email: event.email.trim(),
+        password: event.password,
+      );
+      emit(const AuthSuccess('Đăng nhập thành công!'));
+    } on FirebaseAuthException catch (e) {
+      emit(AuthFailure(_mapFirebaseAuthError(e.code)));
+    } catch (e) {
+      emit(AuthFailure('Đã xảy ra lỗi: $e'));
     }
   }
 
@@ -41,13 +75,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
 
-    if (event.phone.isNotEmpty) {
+    if (event.email.isEmpty || event.password.isEmpty || event.name.isEmpty) {
+      emit(const AuthFailure('Vui lòng điền đầy đủ thông tin'));
+      return;
+    }
+
+    try {
+      final userCredential = await _firebaseAuth.createUserWithEmailAndPassword(
+        email: event.email.trim(),
+        password: event.password,
+      );
+
+      // Update display name
+      await userCredential.user?.updateDisplayName(event.name.trim());
+
       emit(const AuthSuccess('Đăng ký thành công!'));
-    } else {
-      emit(const AuthFailure('Vui lòng nhập số điện thoại'));
+    } on FirebaseAuthException catch (e) {
+      emit(AuthFailure(_mapFirebaseAuthError(e.code)));
+    } catch (e) {
+      emit(AuthFailure('Đã xảy ra lỗi: $e'));
     }
   }
 
@@ -56,13 +103,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     emit(AuthLoading());
-    // Simulate API call
-    await Future.delayed(const Duration(seconds: 1));
 
-    if (event.emailOrPhone.isNotEmpty) {
-      emit(const AuthSuccess('Yêu cầu đã được gửi!'));
-    } else {
-      emit(const AuthFailure('Vui lòng nhập Email hoặc Số điện thoại'));
+    if (event.email.isEmpty) {
+      emit(const AuthFailure('Vui lòng nhập email'));
+      return;
+    }
+
+    try {
+      await _firebaseAuth.sendPasswordResetEmail(email: event.email.trim());
+      emit(
+        const AuthSuccess(
+          'Đã gửi email khôi phục mật khẩu! Vui lòng kiểm tra hộp thư.',
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      emit(AuthFailure(_mapFirebaseAuthError(e.code)));
+    } catch (e) {
+      emit(AuthFailure('Đã xảy ra lỗi: $e'));
     }
   }
 
@@ -74,10 +131,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       // Sign out first to get the account picker
       await _googleSignIn.signOut();
-      
+
       // Sign in with Google
       final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      
+
       if (googleUser == null) {
         emit(const AuthFailure('Đăng nhập Google đã bị huỷ'));
         return;
@@ -94,12 +151,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       );
 
       // Sign in to Firebase with the credential
-      final userCredential =
-          await _firebaseAuth.signInWithCredential(credential);
+      final userCredential = await _firebaseAuth.signInWithCredential(
+        credential,
+      );
 
       if (userCredential.user != null) {
-        emit(const AuthSuccess(
-            'Đăng nhập Google thành công!'));
+        emit(const AuthSuccess('Đăng nhập Google thành công!'));
       } else {
         emit(const AuthFailure('Không thể đăng nhập với Google'));
       }
@@ -128,11 +185,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           return;
         }
 
-        final facebookAuthCredential =
-            FacebookAuthProvider.credential(accessToken);
+        final facebookAuthCredential = FacebookAuthProvider.credential(
+          accessToken,
+        );
 
-        final userCredential =
-            await _firebaseAuth.signInWithCredential(facebookAuthCredential);
+        final userCredential = await _firebaseAuth.signInWithCredential(
+          facebookAuthCredential,
+        );
 
         if (userCredential.user != null) {
           emit(const AuthSuccess('Đăng nhập Facebook thành công!'));
