@@ -1,6 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geocoding/geocoding.dart';
 import '../../constants/colors.dart';
 import '../../router/app_router.gr.dart';
 import '../widgets/common/app_search_field.dart';
@@ -15,6 +18,49 @@ class AddressScreen extends StatefulWidget {
 
 class _AddressScreenState extends State<AddressScreen> {
   final TextEditingController _addressController = TextEditingController();
+  String? _currentAddress;
+  LatLng? _currentPosition;
+  bool _loadingLocation = false;
+  Future<void> _getCurrentLocation() async {
+    setState(() {
+      _loadingLocation = true;
+    });
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          setState(() {
+            _loadingLocation = false;
+            _currentAddress = 'Bạn cần cấp quyền vị trí cho ứng dụng.';
+          });
+          return;
+        }
+      }
+      if (permission == LocationPermission.deniedForever) {
+        setState(() {
+          _loadingLocation = false;
+          _currentAddress = 'Bạn đã từ chối quyền vị trí vĩnh viễn. Vui lòng vào Cài đặt để cấp lại.';
+        });
+        return;
+      }
+      final position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+      _currentPosition = LatLng(position.latitude, position.longitude);
+      // Reverse geocode
+      List<Placemark> placemarks = await placemarkFromCoordinates(position.latitude, position.longitude);
+      if (placemarks.isNotEmpty) {
+        final place = placemarks.first;
+        _currentAddress = '${place.street ?? ''}, ${place.subLocality ?? ''}, ${place.locality ?? ''}, ${place.country ?? ''}';
+      } else {
+        _currentAddress = 'Không tìm thấy địa chỉ';
+      }
+    } catch (e) {
+      _currentAddress = 'Lỗi định vị: $e';
+    }
+    setState(() {
+      _loadingLocation = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +85,34 @@ class _AddressScreenState extends State<AddressScreen> {
       ),
       body: Column(
         children: [
+          // Hiển thị bản đồ nhỏ nếu đã có vị trí
+          if (_currentPosition != null)
+            Container(
+              height: 180,
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: GoogleMap(
+                  initialCameraPosition: CameraPosition(
+                    target: _currentPosition!,
+                    zoom: 16,
+                  ),
+                  markers: {
+                    Marker(
+                      markerId: const MarkerId('current'),
+                      position: _currentPosition!,
+                    ),
+                  },
+                  zoomControlsEnabled: false,
+                  myLocationEnabled: true,
+                  liteModeEnabled: true,
+                ),
+              ),
+            ),
           // Search Bar
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -59,10 +133,12 @@ class _AddressScreenState extends State<AddressScreen> {
                 fontSize: 15,
               ),
             ),
-            subtitle: const Text('Định vị vị trí hiện tại của bạn'),
-            onTap: () {
-              // Handle current location
-            },
+            subtitle: _loadingLocation
+                ? const Text('Đang định vị...')
+                : (_currentAddress != null
+                    ? Text(_currentAddress!, style: const TextStyle(color: Colors.black87))
+                    : const Text('Định vị vị trí hiện tại của bạn')),
+            onTap: _getCurrentLocation,
           ),
           const Divider(thickness: 1, height: 1),
 

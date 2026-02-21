@@ -1,0 +1,8 @@
+# Add geolocator and google_maps_flutter for location and map UI
+# See https://pub.dev/packages/geolocator and https://pub.dev/packages/google_maps_flutter for latest versions
+
+dependencies:
+  geolocator: ^10.1.0
+  google_maps_flutter: ^2.5.0
+
+# ...existing code...
