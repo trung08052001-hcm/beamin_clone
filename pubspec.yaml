@@ -37,7 +37,7 @@ dependencies:
   google_fonts: ^8.0.1
   carousel_slider: ^5.1.2
   flutter_svg: ^2.2.3
-  intl: ^0.20.2
+  intl: any
   flutter_bloc: ^9.1.1
   get_it: ^9.2.0
   injectable: ^2.7.1+4
@@ -47,6 +47,12 @@ dependencies:
   firebase_auth: ^6.1.4
   google_sign_in: ^6.3.0
   flutter_facebook_auth: ^7.1.2
+  flutter_gemini: ^3.0.0
+  image_picker: ^1.2.1
+  dash_chat_2: ^0.0.21
+
+dependency_overrides:
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:

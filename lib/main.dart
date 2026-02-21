@@ -7,13 +7,14 @@ import 'firebase_options.dart';
 import 'injection.dart';
 import 'router/app_router.dart';
 import 'bloc/auth/auth_bloc.dart';
+import 'package:flutter_gemini/flutter_gemini.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   configureDependencies();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  Gemini.init(apiKey: 'AIzaSyARuy-9yU4coF-4Iqb9j_jz8U8rJE-cWS0');
+
   runApp(const BaeminApp());
 }
 
