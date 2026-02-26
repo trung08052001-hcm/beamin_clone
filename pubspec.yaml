@@ -54,6 +54,9 @@ dependencies:
   google_maps_flutter: ^2.14.2
   geocoding: ^4.0.0
   google_places_flutter: ^2.1.1
+  dio: any
+  retrofit: any
+  json_annotation: any
 
 dependency_overrides:
   intl: ^0.20.2
@@ -71,6 +74,8 @@ dev_dependencies:
   build_runner: ^2.11.1
   injectable_generator: ^2.12.0
   auto_route_generator: ^10.4.0
+  retrofit_generator: any
+  json_serializable: any
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
