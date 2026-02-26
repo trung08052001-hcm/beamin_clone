@@ -4,6 +4,7 @@ class AppSearchField extends StatelessWidget {
   final TextEditingController controller;
   final String hintText;
   final Function(String)? onSubmitted;
+  final Function(String)? onChanged;
   final bool autofocus;
   final Widget? prefixIcon;
   final double height;
@@ -14,6 +15,7 @@ class AppSearchField extends StatelessWidget {
     required this.controller,
     required this.hintText,
     this.onSubmitted,
+    this.onChanged,
     this.autofocus = false,
     this.prefixIcon,
     this.height = 44,
@@ -32,6 +34,7 @@ class AppSearchField extends StatelessWidget {
         controller: controller,
         autofocus: autofocus,
         onSubmitted: onSubmitted,
+        onChanged: onChanged,
         textAlignVertical: TextAlignVertical.center,
         decoration: InputDecoration(
           hintText: hintText,
