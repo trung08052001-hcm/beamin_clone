@@ -14,6 +14,7 @@ Restaurant _$RestaurantFromJson(Map<String, dynamic> json) => Restaurant(
   deliveryTime: json['deliveryTime'] as String,
   description: json['description'] as String,
   isFreeship: json['isFreeship'] as bool,
+  category: json['category'] as String,
 );
 
 Map<String, dynamic> _$RestaurantToJson(Restaurant instance) =>
@@ -25,4 +26,5 @@ Map<String, dynamic> _$RestaurantToJson(Restaurant instance) =>
       'deliveryTime': instance.deliveryTime,
       'description': instance.description,
       'isFreeship': instance.isFreeship,
+      'category': instance.category,
     };

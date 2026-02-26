@@ -11,6 +11,7 @@ class Restaurant {
   final String deliveryTime;
   final String description;
   final bool isFreeship;
+  final String category;
 
   Restaurant({
     required this.name,
@@ -20,6 +21,7 @@ class Restaurant {
     required this.deliveryTime,
     required this.description,
     required this.isFreeship,
+    required this.category,
   });
 
   factory Restaurant.fromJson(Map<String, dynamic> json) =>

@@ -26,5 +26,8 @@ abstract class ApiClient {
 
   @GET('/restaurants')
   Future<List<Restaurant>> getRestaurants();
+
+  @GET('/restaurants')
+  Future<List<Restaurant>> getRestaurantsByCategory(@Query('category') String category);
 }
 

@@ -11,3 +11,11 @@ class RestaurantFetched extends RestaurantEvent {
   const RestaurantFetched();
 }
 
+class RestaurantFetchedByCategory extends RestaurantEvent {
+  final String category;
+
+  const RestaurantFetchedByCategory(this.category);
+
+  @override
+  List<Object?> get props => [category];
+}

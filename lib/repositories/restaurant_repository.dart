@@ -12,5 +12,8 @@ class RestaurantRepository {
   Future<List<Restaurant>> getRestaurants() {
     return _apiClient.getRestaurants();
   }
-}
 
+  Future<List<Restaurant>> getRestaurantsByCategory(String category) {
+    return _apiClient.getRestaurantsByCategory(category);
+  }
+}

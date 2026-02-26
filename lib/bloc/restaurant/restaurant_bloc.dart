@@ -14,6 +14,7 @@ class RestaurantBloc extends Bloc<RestaurantEvent, RestaurantState> {
 
   RestaurantBloc(this._repository) : super(RestaurantInitial()) {
     on<RestaurantFetched>(_onRestaurantFetched);
+    on<RestaurantFetchedByCategory>(_onRestaurantFetchedByCategory);
   }
 
   Future<void> _onRestaurantFetched(
@@ -28,5 +29,17 @@ class RestaurantBloc extends Bloc<RestaurantEvent, RestaurantState> {
       emit(RestaurantError('Không thể tải danh sách quán ăn. Vui lòng thử lại.'));
     }
   }
-}
 
+  Future<void> _onRestaurantFetchedByCategory(
+    RestaurantFetchedByCategory event,
+    Emitter<RestaurantState> emit,
+  ) async {
+    emit(RestaurantLoading());
+    try {
+      final restaurants = await _repository.getRestaurantsByCategory(event.category);
+      emit(RestaurantLoaded(restaurants));
+    } catch (e) {
+      emit(RestaurantError('Không thể tải danh sách quán ăn. Vui lòng thử lại.'));
+    }
+  }
+}

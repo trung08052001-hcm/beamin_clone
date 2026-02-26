@@ -20,8 +20,43 @@ class FoodScreen extends StatelessWidget {
   }
 }
 
-class _FoodScreenBody extends StatelessWidget {
+class _FoodScreenBody extends StatefulWidget {
   const _FoodScreenBody();
+
+  @override
+  State<_FoodScreenBody> createState() => _FoodScreenBodyState();
+}
+
+class _FoodScreenBodyState extends State<_FoodScreenBody> {
+  String _selectedCategory = 'Tất cả';
+
+  // Map filter label với category trong database
+  final Map<String, List<String>> _categoryFilters = {
+    'Tất cả': [],
+    'Cơm': ['Cơm'],
+    'Bún/Phở': ['Bún/Phở'],
+    'Trà sữa': ['Trà sữa', 'Ăn vặt'], // Trà sữa nằm trong Ăn vặt
+    'Ăn vặt': ['Ăn vặt'],
+    'Gà rán': ['Gà rán'],
+  };
+
+  void _onFilterSelected(String label) {
+    setState(() {
+      _selectedCategory = label;
+    });
+  }
+
+  List<Restaurant> _filterRestaurants(List<Restaurant> restaurants) {
+    final categories = _categoryFilters[_selectedCategory] ?? [];
+    
+    // Nếu chọn "Tất cả" thì hiện tất cả
+    if (categories.isEmpty) {
+      return restaurants;
+    }
+    
+    // Lọc theo category
+    return restaurants.where((r) => categories.contains(r.category)).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,12 +93,12 @@ class _FoodScreenBody extends StatelessWidget {
             child: ListView(
               scrollDirection: Axis.horizontal,
               children: [
-                _buildFilterChip('Tất cả', isSelected: true),
-                _buildFilterChip('Cơm'),
-                _buildFilterChip('Bún/Phở'),
-                _buildFilterChip('Trà sữa'),
-                _buildFilterChip('Ăn vặt'),
-                _buildFilterChip('Gà rán'),
+                _buildFilterChip('Tất cả', isSelected: _selectedCategory == 'Tất cả'),
+                _buildFilterChip('Cơm', isSelected: _selectedCategory == 'Cơm'),
+                _buildFilterChip('Bún/Phở', isSelected: _selectedCategory == 'Bún/Phở'),
+                _buildFilterChip('Trà sữa', isSelected: _selectedCategory == 'Trà sữa'),
+                _buildFilterChip('Ăn vặt', isSelected: _selectedCategory == 'Ăn vặt'),
+                _buildFilterChip('Gà rán', isSelected: _selectedCategory == 'Gà rán'),
               ],
             ),
           ),
@@ -78,22 +113,35 @@ class _FoodScreenBody extends StatelessWidget {
                   return const Center(child: CircularProgressIndicator());
                 } else if (state is RestaurantError) {
                   return Center(
-                    child: Text(
-                      state.message,
-                      style: const TextStyle(color: Colors.red),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          state.message,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: () {
+                            context.read<RestaurantBloc>().add(const RestaurantFetched());
+                          },
+                          child: const Text('Thử lại'),
+                        ),
+                      ],
                     ),
                   );
                 } else if (state is RestaurantLoaded) {
-                  if (state.restaurants.isEmpty) {
+                  final filteredRestaurants = _filterRestaurants(state.restaurants);
+                  if (filteredRestaurants.isEmpty) {
                     return const Center(
                       child: Text('Chưa có quán ăn nào.'),
                     );
                   }
                   return ListView.builder(
                     padding: const EdgeInsets.all(16),
-                    itemCount: state.restaurants.length,
+                    itemCount: filteredRestaurants.length,
                     itemBuilder: (context, index) {
-                      final restaurant = state.restaurants[index];
+                      final restaurant = filteredRestaurants[index];
                       return _buildRestaurantItem(restaurant);
                     },
                   );
@@ -110,17 +158,20 @@ class _FoodScreenBody extends StatelessWidget {
   Widget _buildFilterChip(String label, {bool isSelected = false}) {
     return Container(
       margin: const EdgeInsets.only(right: 8),
-      child: Chip(
-        label: Text(label),
-        backgroundColor: isSelected
-            ? AppColors.primary.withOpacity(0.1)
-            : Colors.grey[100],
-        labelStyle: TextStyle(
-          color: isSelected ? AppColors.primary : Colors.black87,
-          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      child: InkWell(
+        onTap: () => _onFilterSelected(label),
+        child: Chip(
+          label: Text(label),
+          backgroundColor: isSelected
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : Colors.grey[100],
+          labelStyle: TextStyle(
+            color: isSelected ? AppColors.primary : Colors.black87,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+          side: BorderSide.none,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         ),
-        side: BorderSide.none,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
     );
   }
