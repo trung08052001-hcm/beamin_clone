@@ -2,13 +2,14 @@ import 'package:dio/dio.dart';
 import 'package:injectable/injectable.dart';
 import 'package:retrofit/retrofit.dart';
 
+import '../models/product.dart';
 import '../models/restaurant.dart';
 
 part 'api_client.g.dart';
 
 @module
 abstract class DioModule {
-  @lazySingleton
+  @lazySingleton 
   Dio get dio => Dio(
         BaseOptions(
           baseUrl: 'http://10.0.2.2:3000',
@@ -32,5 +33,12 @@ abstract class ApiClient {
 
   @GET('/restaurants/search')
   Future<List<Restaurant>> searchRestaurants(@Query('q') String query);
+
+  // Product APIs
+  @GET('/products')
+  Future<List<Product>> getProducts();
+
+  @GET('/products/category/{catName}')
+  Future<List<Product>> getProductsByCategory(@Path('catName') String category);
 }
 

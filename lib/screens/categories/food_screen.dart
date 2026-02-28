@@ -6,6 +6,7 @@ import '../../bloc/restaurant/restaurant_bloc.dart';
 import '../../constants/colors.dart';
 import '../../injection.dart';
 import '../../models/restaurant.dart';
+import 'restaurant_detail_screen.dart';
 
 @RoutePage()
 class FoodScreen extends StatelessWidget {
@@ -177,31 +178,40 @@ class _FoodScreenBodyState extends State<_FoodScreenBody> {
   }
 
   Widget _buildRestaurantItem(Restaurant restaurant) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Image.network(
-              restaurant.imageUrl,
-              width: 80,
-              height: 80,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Container(
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => RestaurantDetailScreen(restaurant: restaurant),
+          ),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 20),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                restaurant.imageUrl,
                 width: 80,
                 height: 80,
-                color: Colors.grey[200],
-                child: const Icon(Icons.restaurant, color: Colors.grey),
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  width: 80,
+                  height: 80,
+                  color: Colors.grey[200],
+                  child: const Icon(Icons.restaurant, color: Colors.grey),
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
                   Text(
                     restaurant.name,
                     style: const TextStyle(
@@ -209,54 +219,55 @@ class _FoodScreenBodyState extends State<_FoodScreenBody> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                const SizedBox(height: 4),
-                Row(
-                  children: [
-                    const Icon(Icons.star, size: 14, color: Colors.amber),
-                    Text(
-                      ' ${restaurant.rating.toStringAsFixed(1)}',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    Text(
-                      ' (${restaurant.totalReviews}) • ${restaurant.deliveryTime}',
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      const Icon(Icons.star, size: 14, color: Colors.amber),
+                      Text(
+                        ' ${restaurant.rating.toStringAsFixed(1)}',
+                        style: const TextStyle(fontSize: 12),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  restaurant.description,
-                  style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                if (restaurant.isFreeship)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 4,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.red[50],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                    child: Text(
-                      'FREESHIP',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.red[400],
-                        fontWeight: FontWeight.bold,
+                      Text(
+                        ' (${restaurant.totalReviews}) • ${restaurant.deliveryTime}',
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-              ],
+                  const SizedBox(height: 4),
+                  Text(
+                    restaurant.description,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  if (restaurant.isFreeship)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.red[50],
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                      child: Text(
+                        'FREESHIP',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.red[400],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

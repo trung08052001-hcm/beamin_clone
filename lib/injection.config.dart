@@ -14,9 +14,11 @@ import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 
 import 'bloc/auth/auth_bloc.dart' as _i739;
+import 'bloc/product/product_bloc.dart' as _i26;
 import 'bloc/restaurant/restaurant_bloc.dart' as _i25;
 import 'bloc/splash/splash_bloc.dart' as _i12;
 import 'network/api_client.dart' as _i96;
+import 'repositories/product_repository.dart' as _i752;
 import 'repositories/restaurant_repository.dart' as _i751;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -36,6 +38,12 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i25.RestaurantBloc>(
       () => _i25.RestaurantBloc(gh<_i751.RestaurantRepository>()),
+    );
+    gh.factory<_i752.ProductRepository>(
+      () => _i752.ProductRepository(gh<_i96.ApiClient>()),
+    );
+    gh.factory<_i26.ProductBloc>(
+      () => _i26.ProductBloc(gh<_i752.ProductRepository>()),
     );
     return this;
   }
