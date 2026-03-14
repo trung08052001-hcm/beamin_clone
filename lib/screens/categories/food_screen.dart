@@ -1,11 +1,10 @@
-import 'package:auto_route/auto_route.dart';
+﻿import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../bloc/restaurant/restaurant_bloc.dart';
 import '../../constants/colors.dart';
-import '../../injection.dart';
+import '../../data/brand_menus.dart';
 import '../../models/restaurant.dart';
+import '../cart_screen.dart';
 import 'restaurant_detail_screen.dart';
 
 @RoutePage()
@@ -14,10 +13,7 @@ class FoodScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<RestaurantBloc>()..add(const RestaurantFetched()),
-      child: const _FoodScreenBody(),
-    );
+    return const _FoodScreenBody();
   }
 }
 
@@ -29,34 +25,25 @@ class _FoodScreenBody extends StatefulWidget {
 }
 
 class _FoodScreenBodyState extends State<_FoodScreenBody> {
-  String _selectedCategory = 'Tất cả';
-
-  // Map filter label với category trong database
-  final Map<String, List<String>> _categoryFilters = {
-    'Tất cả': [],
-    'Cơm': ['Cơm'],
-    'Bún/Phở': ['Bún/Phở'],
-    'Trà sữa': ['Trà sữa', 'Ăn vặt'], // Trà sữa nằm trong Ăn vặt
-    'Ăn vặt': ['Ăn vặt'],
-    'Gà rán': ['Gà rán'],
-  };
-
-  void _onFilterSelected(String label) {
-    setState(() {
-      _selectedCategory = label;
-    });
-  }
-
-  List<Restaurant> _filterRestaurants(List<Restaurant> restaurants) {
-    final categories = _categoryFilters[_selectedCategory] ?? [];
-    
-    // Nếu chọn "Tất cả" thì hiện tất cả
-    if (categories.isEmpty) {
-      return restaurants;
+  List<Restaurant> _buildRestaurants() {
+    final restaurants = <Restaurant>[];
+    for (final entry in brandMenus.entries) {
+      final items = entry.value;
+      final imageUrl = items.isNotEmpty ? items.first.imageUrl : '';
+      restaurants.add(
+        Restaurant(
+          name: entry.key,
+          imageUrl: imageUrl,
+          rating: 4.5,
+          totalReviews: '120',
+          deliveryTime: '20-30 phút',
+          description: 'Món ngon mỗi ngày',
+          isFreeship: true,
+          category: 'Khác',
+        ),
+      );
     }
-    
-    // Lọc theo category
-    return restaurants.where((r) => categories.contains(r.category)).toList();
+    return restaurants;
   }
 
   @override
@@ -81,98 +68,38 @@ class _FoodScreenBodyState extends State<_FoodScreenBody> {
           ),
           IconButton(
             icon: const Icon(Icons.shopping_cart_outlined, color: Colors.black),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const CartScreen()),
+              );
+            },
           ),
         ],
       ),
       body: Column(
         children: [
-          // Filter / Subcategory row
-          Container(
-            height: 50,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: [
-                _buildFilterChip('Tất cả', isSelected: _selectedCategory == 'Tất cả'),
-                _buildFilterChip('Cơm', isSelected: _selectedCategory == 'Cơm'),
-                _buildFilterChip('Bún/Phở', isSelected: _selectedCategory == 'Bún/Phở'),
-                _buildFilterChip('Trà sữa', isSelected: _selectedCategory == 'Trà sữa'),
-                _buildFilterChip('Ăn vặt', isSelected: _selectedCategory == 'Ăn vặt'),
-                _buildFilterChip('Gà rán', isSelected: _selectedCategory == 'Gà rán'),
-              ],
-            ),
-          ),
-          const Divider(height: 1),
           Expanded(
-            child: BlocBuilder<RestaurantBloc, RestaurantState>(
-              builder: (context, state) {
-                if (state is RestaurantInitial) {
-                  context.read<RestaurantBloc>().add(const RestaurantFetched());
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is RestaurantLoading) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (state is RestaurantError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          state.message,
-                          style: const TextStyle(color: Colors.red),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () {
-                            context.read<RestaurantBloc>().add(const RestaurantFetched());
-                          },
-                          child: const Text('Thử lại'),
-                        ),
-                      ],
-                    ),
-                  );
-                } else if (state is RestaurantLoaded) {
-                  final filteredRestaurants = _filterRestaurants(state.restaurants);
-                  if (filteredRestaurants.isEmpty) {
-                    return const Center(
-                      child: Text('Chưa có quán ăn nào.'),
-                    );
-                  }
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: filteredRestaurants.length,
-                    itemBuilder: (context, index) {
-                      final restaurant = filteredRestaurants[index];
-                      return _buildRestaurantItem(restaurant);
-                    },
+            child: Builder(
+              builder: (context) {
+                final restaurants = _buildRestaurants();
+                if (restaurants.isEmpty) {
+                  return const Center(
+                    child: Text('Chưa có quán ăn nào.'),
                   );
                 }
-                return const SizedBox.shrink();
+                return ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: restaurants.length,
+                  itemBuilder: (context, index) {
+                    final restaurant = restaurants[index];
+                    return _buildRestaurantItem(restaurant);
+                  },
+                );
               },
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, {bool isSelected = false}) {
-    return Container(
-      margin: const EdgeInsets.only(right: 8),
-      child: InkWell(
-        onTap: () => _onFilterSelected(label),
-        child: Chip(
-          label: Text(label),
-          backgroundColor: isSelected
-              ? AppColors.primary.withValues(alpha: 0.1)
-              : Colors.grey[100],
-          labelStyle: TextStyle(
-            color: isSelected ? AppColors.primary : Colors.black87,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-          ),
-          side: BorderSide.none,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        ),
       ),
     );
   }
@@ -183,7 +110,10 @@ class _FoodScreenBodyState extends State<_FoodScreenBody> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => RestaurantDetailScreen(restaurant: restaurant),
+            builder: (context) => RestaurantDetailScreen(
+              restaurant: restaurant,
+              menuItems: brandMenus[restaurant.name] ?? const [],
+            ),
           ),
         );
       },

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'constants/colors.dart';
@@ -7,6 +7,7 @@ import 'firebase_options.dart';
 import 'injection.dart';
 import 'router/app_router.dart';
 import 'bloc/auth/auth_bloc.dart';
+import 'bloc/cart/cart_bloc.dart';
 import 'package:flutter_gemini/flutter_gemini.dart';
 
 void main() async {
@@ -25,8 +26,11 @@ class BaeminApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider<AuthBloc>(
-      create: (_) => getIt<AuthBloc>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthBloc>(create: (_) => getIt<AuthBloc>()),
+        BlocProvider<CartBloc>(create: (_) => CartBloc()),
+      ],
       child: MaterialApp.router(
         routerConfig: _appRouter.config(),
         title: 'Baemin Clone',
